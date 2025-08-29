@@ -19,7 +19,7 @@ from app.db.base import Base
 
 
 class Answer(Base):
-"""
+    """
     Модель для хранения ответов.
 
     Args:
@@ -30,6 +30,7 @@ class Answer(Base):
         created_at (datetime): Дата и время создания ответа;
         question (Question): Объект связанного вопроса.
     """
+
     __tablename__ = "answers"
     __table_args__ = (
         CheckConstraint("btrim(text) <> ''", name="ck_answers_text_not_blank"),
