@@ -20,7 +20,6 @@ sys.path.append(str(BASE_DIR))
 
 config = context.config
 
-# Подменяем sqlalchemy.url значением из '.env'
 config.set_main_option("sqlalchemy.url", settings.database_url)
 
 if config.config_file_name is not None:
