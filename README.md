@@ -51,7 +51,7 @@
 
 1. Склонировать проект:
    ```bash
-   git clone https://github.com/alekseevpy/ta_hightalent.git
+   git clone https://github.com/alekseevpy/ta_hitalent.git
 
 2. Запустить контейнеры:
     ```bash
