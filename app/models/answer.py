@@ -46,8 +46,14 @@ class Answer(Base):
         nullable=False,
         index=True,
     )
-    # В API - строка, в БД — UUID
-    user_id: Mapped[str] = mapped_column(UUID(as_uuid=False), nullable=False)
+    user_id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False),
+        nullable=False,
+        doc=(
+            "UUID пользователя (строкой). Валидация/нормализация — ",
+            "на уровне схем.",
+        ),
+    )
     text: Mapped[str] = mapped_column(sa.String(1000), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         sa.DateTime(timezone=True),
