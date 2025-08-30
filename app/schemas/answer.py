@@ -4,7 +4,10 @@ Pydantic-схемы для работы с Answer.
 Содержит модели валидации входных данных для создания ответа и модели
 для формирования ответов API. Выполнена строгая валидация:
     - text триммится и не может быть пустой строкой;
-    - user_id валидируется как UUID (нормализуется к нижнему регистру);
+    - user_id:
+        * если корректный UUID — нормализуется к нижнему регистру;
+        * если произвольная строка — генерируется детерминированный
+        UUID5 на её основе.
     - включён режим from_attributes для удобной сериализации из ORM.
 """
 
@@ -23,24 +26,30 @@ class AnswerCreate(BaseModel):
     Модель тела запроса для создания ответа.
 
     Args:
-        user_id (str): UUID пользователя (строкой);
+        user_id (str): Идентификатор пользователя:
+            * валидный UUID - нормализуется;
+            * произвольная строка - конвертируется в UUID5;
         text (str): Текст ответа (обязателен, непустой, <= 1000 символов).
     """
 
-    user_id: str = Field(..., description="UUID пользователя, строкой")
+    user_id: str = Field(..., description="UUID пользователя или любая строка")
     text: str = Field(..., max_length=1000, description="Текст ответа")
 
     @field_validator("user_id")
     @classmethod
-    def validate_user_id_uuid(cls, v: str) -> str:
+    def normalize_or_generate_uuid(cls, v: str) -> str:
         """
-        Проверяем, что user_id корректный UUID;
-        нормализуем к нижнему регистру.
+        Нормализует user_id к UUID:
+            - если передан валидный UUID, то приводит к нижнему регистру;
+            - если строка не UUID, то генерирует стабильный UUID5 на её основе.
         """
+        vv = v.strip()
+        if not vv:
+            raise ValueError("user_id must not be blank")
         try:
-            return str(uuid.UUID(v)).lower()
-        except Exception:
-            raise ValueError("user_id must be a valid UUID string")
+            return str(uuid.UUID(vv)).lower()
+        except ValueError:
+            return str(uuid.uuid5(uuid.NAMESPACE_DNS, vv)).lower()
 
     @field_validator("text")
     @classmethod
@@ -62,7 +71,7 @@ class AnswerOut(BaseModel):
     Args:
         id (int): Идентификатор ответа;
         question_id (int): Идентификатор вопроса;
-        user_id (str): UUID пользователя;
+        user_id (str): UUID пользователя (нормализованный);
         text (str): Текст ответа;
         created_at (datetime): Время создания.
     """
